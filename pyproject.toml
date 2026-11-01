@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ffxiv-gathering-log"
+version = "0.1.0"
+description = "Local-first CLI for logging FFXIV gathering nodes, timers, and yields with CSV export."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [{name = "Asdale Dynamics, LLC"}]
+keywords = ["ffxiv", "gathering", "cli", "csv", "local-first"]
+
+[project.scripts]
+ffxiv-gather-log = "ffxiv_gathering_log.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ffxiv_gathering_log*"]
