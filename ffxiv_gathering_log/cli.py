@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import argparse
 import os
 import sys
-from typing import List, Optional
+from typing import List, Optional, cast
 
-from .export import export_all, format_table
+from .export import export_all, export_nodes, export_yields, format_table
 from .models import Log, Node, NODE_TYPES, YieldRecord, now_iso, new_id
 from .storage import Storage
 
@@ -77,6 +79,8 @@ def cmd_add_yield(args: argparse.Namespace, log: Log, storage: Storage) -> int:
         gathered_at=now_iso(),
     )
     node.last_gathered = record.gathered_at
+    gathered = datetime.fromisoformat(record.gathered_at)
+    node.next_spawn = (gathered + timedelta(seconds=node.respawn_seconds)).isoformat()
     log.add_yield(record)
     storage.save(log)
     print(
@@ -109,8 +113,18 @@ def cmd_timers(args: argparse.Namespace, log: Log, storage: Storage) -> int:
         print("No nodes logged yet.")
         return 0
     rows = []
+    now = datetime.now(timezone.utc)
     for node in log.nodes:
-        status = "gathered recently" if node.last_gathered else "never gathered"
+        if node.last_gathered:
+            last = datetime.fromisoformat(node.last_gathered)
+            next_spawn = last + timedelta(seconds=node.respawn_seconds)
+            remaining = next_spawn - now
+            if remaining.total_seconds() > 0:
+                status = f"spawns in {int(remaining.total_seconds())}s"
+            else:
+                status = "ready to gather"
+        else:
+            status = "never gathered"
         rows.append([node.name, node.node_type, str(node.respawn_seconds), status])
     print(format_table(rows, ["name", "type", "respawn_s", "status"]))
     return 0
@@ -129,11 +143,16 @@ def cmd_stats(args: argparse.Namespace, log: Log, storage: Storage) -> int:
 
 
 def cmd_export(args: argparse.Namespace, log: Log, storage: Storage) -> int:
-    if args.nodes:
-        node_count, _ = export_all(log, args.nodes, args.yields or "/dev/null")
+    if args.nodes and args.yields:
+        node_count, yield_count = export_all(log, args.nodes, args.yields)
+        print(
+            f"Exported {node_count} nodes to {args.nodes} and {yield_count} yields to {args.yields}"
+        )
+    elif args.nodes:
+        node_count = export_nodes(log, args.nodes)
         print(f"Exported {node_count} nodes to {args.nodes}")
     elif args.yields:
-        _, yield_count = export_all(log, "/dev/null", args.yields)
+        yield_count = export_yields(log, args.yields)
         print(f"Exported {yield_count} yields to {args.yields}")
     elif args.dir:
         os.makedirs(args.dir, exist_ok=True)
@@ -205,7 +224,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
     storage = Storage(args.data)
     log = storage.load()
-    return args.func(args, log, storage)
+    return cast(int, args.func(args, log, storage))
 
 
 if __name__ == "__main__":

@@ -22,7 +22,7 @@ from ffxiv_gathering_log.storage import Storage
 
 
 class TestModels(unittest.TestCase):
-    def test_node_roundtrip(self):
+    def test_node_roundtrip(self) -> None:
         node = Node(
             id=new_id(),
             name="Copper Ore",
@@ -35,7 +35,7 @@ class TestModels(unittest.TestCase):
         restored = Node.from_dict(node.to_dict())
         self.assertEqual(restored, node)
 
-    def test_yield_roundtrip(self):
+    def test_yield_roundtrip(self) -> None:
         record = YieldRecord(
             id=new_id(),
             node_id="abc",
@@ -46,7 +46,7 @@ class TestModels(unittest.TestCase):
         restored = YieldRecord.from_dict(record.to_dict())
         self.assertEqual(restored, record)
 
-    def test_log_find_node(self):
+    def test_log_find_node(self) -> None:
         log = Log()
         node = Node(
             id=new_id(),
@@ -63,7 +63,7 @@ class TestModels(unittest.TestCase):
         self.assertIsNone(log.find_node("missing"))
         self.assertIsNone(log.find_node_by_name("missing"))
 
-    def test_yields_for_node_and_totals(self):
+    def test_yields_for_node_and_totals(self) -> None:
         log = Log()
         node = Node(
             id=new_id(),
@@ -83,14 +83,14 @@ class TestModels(unittest.TestCase):
         self.assertEqual(log.total_yield_for_item("Iron Ore"), 1)
         self.assertEqual(log.total_yield_for_item("Gold Ore"), 0)
 
-    def test_node_types(self):
+    def test_node_types(self) -> None:
         self.assertIn("mining", NODE_TYPES)
         self.assertIn("botany", NODE_TYPES)
         self.assertIn("fishing", NODE_TYPES)
 
 
 class TestStorage(unittest.TestCase):
-    def test_save_and_load_roundtrip(self):
+    def test_save_and_load_roundtrip(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "log.json")
             storage = Storage(path)
@@ -111,7 +111,7 @@ class TestStorage(unittest.TestCase):
             self.assertEqual(loaded.nodes[0].name, "Copper Ore")
             self.assertEqual(len(loaded.yields), 0)
 
-    def test_load_missing_file(self):
+    def test_load_missing_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = os.path.join(tmp, "missing.json")
             storage = Storage(path)
@@ -121,7 +121,7 @@ class TestStorage(unittest.TestCase):
 
 
 class TestExport(unittest.TestCase):
-    def test_export_nodes_and_yields(self):
+    def test_export_nodes_and_yields(self) -> None:
         log = Log()
         node = Node(
             id=new_id(),
@@ -145,7 +145,7 @@ class TestExport(unittest.TestCase):
             self.assertIn("name", header)
             self.assertIn("node_type", header)
 
-    def test_format_table(self):
+    def test_format_table(self) -> None:
         out = format_table(
             [["Copper Ore", "2"], ["Iron Ore", "1"]], ["item", "qty"]
         )
@@ -155,7 +155,7 @@ class TestExport(unittest.TestCase):
 
 
 class TestCLI(unittest.TestCase):
-    def _run(self, argv):
+    def _run(self, argv: list[str]) -> tuple[int, str]:
         parser = build_parser()
         args = parser.parse_args(argv)
         storage = Storage(self.path)
@@ -170,14 +170,14 @@ class TestCLI(unittest.TestCase):
         storage.save(log)
         return code, output
 
-    def setUp(self):
+    def setUp(self) -> None:
         self.tmpdir = tempfile.TemporaryDirectory()
         self.path = os.path.join(self.tmpdir.name, "log.json")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         self.tmpdir.cleanup()
 
-    def test_add_and_list_node(self):
+    def test_add_and_list_node(self) -> None:
         code, out = self._run(
             [
                 "--data",
@@ -202,7 +202,7 @@ class TestCLI(unittest.TestCase):
         self.assertIn("Copper Ore", out)
         self.assertIn("mining", out)
 
-    def test_add_duplicate_node(self):
+    def test_add_duplicate_node(self) -> None:
         self._run(
             [
                 "--data",
@@ -237,7 +237,7 @@ class TestCLI(unittest.TestCase):
         )
         self.assertNotEqual(code, 0)
 
-    def test_add_yield_and_stats(self):
+    def test_add_yield_and_stats(self) -> None:
         self._run(
             [
                 "--data",
@@ -276,7 +276,7 @@ class TestCLI(unittest.TestCase):
         self.assertIn("Copper Ore", out)
         self.assertIn("4", out)
 
-    def test_timers(self):
+    def test_timers(self) -> None:
         self._run(
             [
                 "--data",
@@ -297,7 +297,7 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("Copper Ore", out)
 
-    def test_export_dir(self):
+    def test_export_dir(self) -> None:
         self._run(
             [
                 "--data",
@@ -320,7 +320,7 @@ class TestCLI(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(outdir, "nodes.csv")))
         self.assertTrue(os.path.exists(os.path.join(outdir, "yields.csv")))
 
-    def test_invalid_node_type(self):
+    def test_invalid_node_type(self) -> None:
         parser = build_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(

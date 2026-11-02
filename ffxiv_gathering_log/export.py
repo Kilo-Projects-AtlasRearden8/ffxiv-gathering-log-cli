@@ -57,7 +57,7 @@ def format_table(rows: Iterable[Iterable[str]], headers: list[str]) -> str:
         for i, cell in enumerate(row):
             widths[i] = max(widths[i], len(str(cell)))
 
-    def line(row: list[str]) -> str:
+    def line(row: Iterable[str]) -> str:
         return " | ".join(str(cell).ljust(widths[i]) for i, cell in enumerate(row))
 
     out = [line(headers), "-+-".join("-" * w for w in widths)]

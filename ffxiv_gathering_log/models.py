@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import uuid
+from typing import cast
 
 
 NODE_TYPES = ("mining", "botany", "fishing")
@@ -34,7 +35,7 @@ class Node:
     last_gathered: str | None = None
     next_spawn: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
             "name": self.name,
@@ -48,17 +49,17 @@ class Node:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Node":
+    def from_dict(cls, data: dict[str, object]) -> "Node":
         return cls(
-            id=data["id"],
-            name=data["name"],
-            node_type=data["node_type"],
-            location=data["location"],
-            level=int(data["level"]),
-            respawn_seconds=int(data["respawn_seconds"]),
-            created_at=data["created_at"],
-            last_gathered=data.get("last_gathered"),
-            next_spawn=data.get("next_spawn"),
+            id=cast(str, data["id"]),
+            name=cast(str, data["name"]),
+            node_type=cast(str, data["node_type"]),
+            location=cast(str, data["location"]),
+            level=int(cast(str, data["level"])),
+            respawn_seconds=int(cast(str, data["respawn_seconds"])),
+            created_at=cast(str, data["created_at"]),
+            last_gathered=cast(str | None, data.get("last_gathered")),
+            next_spawn=cast(str | None, data.get("next_spawn")),
         )
 
 
@@ -72,7 +73,7 @@ class YieldRecord:
     quantity: int
     gathered_at: str
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
             "node_id": self.node_id,
@@ -82,13 +83,13 @@ class YieldRecord:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "YieldRecord":
+    def from_dict(cls, data: dict[str, object]) -> "YieldRecord":
         return cls(
-            id=data["id"],
-            node_id=data["node_id"],
-            item=data["item"],
-            quantity=int(data["quantity"]),
-            gathered_at=data["gathered_at"],
+            id=cast(str, data["id"]),
+            node_id=cast(str, data["node_id"]),
+            item=cast(str, data["item"]),
+            quantity=int(cast(str, data["quantity"])),
+            gathered_at=cast(str, data["gathered_at"]),
         )
 
 
