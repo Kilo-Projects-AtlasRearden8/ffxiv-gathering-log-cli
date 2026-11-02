@@ -1,17 +1,20 @@
-# Local data (user-owned, local-first)
-data/
-
-# Python caches
-__pycache__/
-*.py[cod]
-*$py.class
 
 # Build / packaging
-*.egg-info/
-dist/
-build/
-.eggs/
-
 # Editable install artifacts
+# Local data (user-owned, local-first)
+# Python caches
+*$py.class
+*.egg-info/
+*.py[cod]
+*.pyc
+.eggs/
+.env
+.env.*
 .venv/
+__pycache__/
+build/
+data/
+dist/
+dist/*.tmp
+node_modules/
 venv/
